@@ -29,7 +29,7 @@ virtualenv 环境名称
 假设：电脑上有多个python环境，可以指定python版本
 
 virtualenv 环境名称 --python==python3.6
-virtualenv 环境名称 -p "C:\python\python3.6.exe"
+virtualenv 环境名称 -p "C:\Users\km\AppData\Local\Programs\Python\Python36\python3.6.exe"
 virtualenv 环境名称 --python==python2.7
 
 ```
@@ -87,11 +87,11 @@ mac：
 
 ![image-20200515192005865](C:\Users\km\AppData\Roaming\Typora\typora-user-images\image-20200515192005865.png)
 
-#### 3.本地配置
+### 3.本地配置
 
 local_settings.py
 
-##### 3.1在settings中导入
+#### 3.1在settings中导入
 
 ```python
 try:
@@ -100,7 +100,7 @@ except ImportError:
     pass
 ```
 
-##### 3.2创建local_settings.py
+#### 3.2创建local_settings.py
 
 ```python
 LANGUAGE_CODE = 'zh-hans'
@@ -109,13 +109,13 @@ SMS=666
 
 **注意：给别人代码时，不要给local_settings.py**
 
-##### 4.给别人代码，忽略部分环境
+### 4.给别人代码，忽略部分环境
 
-###### 4.1创建一个远程仓库
+#### 4.1创建一个远程仓库
 
 ![image-20200515193714962](C:\Users\km\AppData\Roaming\Typora\typora-user-images\image-20200515193714962.png)
 
-###### 4.2本地代码推送到gitee
+#### 4.2本地代码推送到gitee
 
 - git要忽略一些文件 .gitignore
 
@@ -137,4 +137,22 @@ SMS=666
   !*/migrations/__init__.py
   ```
 
-  
+- git管理项目
+
+  ```
+  git remote add origin https://gitee.com/kemeng1414/s25.git
+  git push -u origin master
+  ```
+
+#### 4.3 测试获取代码
+
+```
+进入自己想要放代码的目录
+git clone https://gitee.com/kemeng1414/s25.git
+```
+
+## 今日作业
+
+- 虚拟环境：tracer
+- 创建一个django项目：tracer
+- git仓库：tracer（.gitignore）
