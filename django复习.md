@@ -646,3 +646,200 @@ with open('f.name', 'wb') as f:
 		
 ```
 
+## 2 路由
+
+### 2.1 基本格式
+
+```python
+from django.conf.urls import url
+from . import view
+urlpatterns =[
+	url(正则表达式，views视图, 参数, 别名)
+]
+
+
+urlpatterns = [
+    url(r'^articles/2003/$', views.special_case_2003),
+    url(r'^articles/([0-9]{4})/$', views.year_archive),
+    url(r'^articles/([0-9]{4})/([0-9]{2})/$', views.month_archive),
+    url(r'^articles/([0-9]{4})/([0-9]{2})/([0-9]+)/$', views.article_detail),
+]
+
+django2.0中 from django.urls import path，re_path
+```
+
+**注意**：
+
+- 自上而下匹配，一旦成功不再继续
+- 需要获取url的值，只需要放在圆括号内（分组匹配）
+- 前面不需要反斜杠，后面需要
+- 正则前面的r应该加上
+
+```python
+# 是否开启URL访问地址后面不为/跳转至带有/的路径的配置项
+APPEND_SLASH=True
+```
+
+### 2.2 分组命名规则
+
+正则表达式中，分组命名正则表达式的语法是`(?P<name>pattren)`其中，name是组的名称，pattern是要匹配的模式
+
+### 2.3 特性
+
+- URLconf不检查请求的方法
+- 捕获到的参数永远都是字符串
+- 视图中可以指定默认值
+
+```python
+# urls.py中
+from django.conf.urls import url
+
+from . import views
+
+urlpatterns = [
+    url(r'^blog/$', views.page),
+    url(r'^blog/page(?P<num>[0-9]+)/$', views.page),
+]
+
+# views.py中，可以为num指定默认值
+def page(request, num="1"):
+    pass
+```
+
+## 3 models
+
+### 3.1 聚合 aggregate 终止子句
+
+```python
+from django.db.models import Max,Min,Count,Sum,Avg
+
+res = models.Book.objects.all().aggregate(max=Max('price'))
+```
+
+### 3.2 分组 group by annotate
+
+annotate 注释， 过程中使用了分组
+
+统计每本书的作者个数
+
+```python
+ret = models.Book.objects.annotate(Count('authors')).values()  # 添加额外的信息
+for i in ret:
+	print(i)
+```
+
+统计出每个出版社卖的最便宜的书的价格
+
+```python
+# 方法1：
+res = models.Publisher.Objects.annotate(Min('book_price')).values() # 跨表查询
+for i in res:
+	print(i)
+    
+# 方法2：
+res = models.Book.objects.values('pub').annotate(Min('price')) # 按照pub__id做的分组
+```
+
+统计不止一个作者的图书
+
+```python
+res = models.Book.objects.annotate(count=Count('authors')).filter(count__gt=1)
+```
+
+### 3.3 F和Q查询
+
+```python
+from django.db.models import F, Q
+
+res = models.Book.objects.filter(kucun__lt=50)
+
+res = models.Book.objects.filter(sale__lt=F('kucun')) where 'sale'>'kucun'
+res = models.Book.objects.filter(id__lte=3).update(sale=F('sale')*2+3)
+```
+
+```python
+ret = models.Book.objects.filter(Q(id__lt=3)|Q(id__gt=5))
+```
+
+& | ~ 与 或 非
+
+### 3.4 事务 同生共死
+
+有一条会错误前面会回退
+
+```
+from django.db import tansaction
+
+try 必须放在外面 不能放在with里面，否则会影响回退
+	# 一系列的操作
+	try:
+		with transaction.atomic():
+		pass
+	except Exception as e:
+		pass
+	
+```
+
+# 4 cookie 
+
+保存在浏览本地上的一组组键值对
+
+特性：
+
+- 由服务器让浏览器进行设置的
+- cookie信息保存在浏览器本地，浏览器可以不保存
+- 浏览器再次访问时自动携带对应的cookie
+
+django中操作cookie
+
+```python
+# 设置cookie
+response.set_cookie(key, value)
+
+# 获取
+request.COOKIE.get('key')
+
+# cookie加密
+response.set_signed_cookie('key', salt='哈哈哈哈')
+
+# 获取加密 cookie
+request.get_signed_cookie('key', salt='哈哈哈哈', default='')
+
+```
+
+参数：
+
+- key
+- vlaue
+- max_age 超时时间
+- path='/'   /表示根路径，根路径下面的都可以获取到cookie  cookie生效路径
+- domain=None cookie生效的域名
+- secure = True  https进行传输
+- httponly = False  https传输 无法被JavaScript传输
+
+清除cookie
+
+- ret.delete_cookie('is_login')  # 删除某个键值对
+
+## 5 session
+
+保存在服务器上的一组组键值对，依赖于cookie使用
+
+为什么使用？
+
+```
+1.cookie是保存在浏览器本地，不太安全
+2.浏览器会对cookie的大小和个数有一定限制
+```
+
+django中session的操作
+
+```python
+# 设置
+request.session[key] = value
+# 获取
+request.session.get('is_login')
+request.session['key']
+# 删除
+```
+
