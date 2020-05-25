@@ -780,13 +780,17 @@ try 必须放在外面 不能放在with里面，否则会影响回退
 	
 ```
 
-# 4 cookie 
+## 4 cookie 
 
 保存在浏览本地上的一组组键值对
 
+为什么要有cookie？
+
+​		HTTP协议是无状态的，每次请求都是相互独立的，没有办法保存状态
+
 特性：
 
-- 由服务器让浏览器进行设置的
+- 由服务器让浏览器进行设置的（返回set-cookie的响应头）
 - cookie信息保存在浏览器本地，浏览器可以不保存
 - 浏览器再次访问时自动携带对应的cookie
 
@@ -794,16 +798,21 @@ django中操作cookie
 
 ```python
 # 设置cookie
+response = HttpResponse('xxx')
 response.set_cookie(key, value)
 
 # 获取
-request.COOKIE.get('key')
+request.COOKIES
+request.COOKIES.get('key')
 
 # cookie加密
-response.set_signed_cookie('key', salt='哈哈哈哈')
+response.set_signed_cookie(key,value, salt='哈哈哈哈')
 
 # 获取加密 cookie
 request.get_signed_cookie('key', salt='哈哈哈哈', default='')
+
+# 删除coolkie  将值设置为空，超时时间设置为0
+response.delete_cookie(key)
 
 ```
 
@@ -832,14 +841,265 @@ request.get_signed_cookie('key', salt='哈哈哈哈', default='')
 2.浏览器会对cookie的大小和个数有一定限制
 ```
 
+特性：（过程）
+
+1. 第一个请求，没有cookie，设置键值对，根据浏览器生成一个唯一标识，给一个字典设置键值对。
+
+2. 将字典转成字符串（json序列化），进行加密，将唯一标识和字符串保存在数据库里(django_session)
+3. 返回给浏览器唯一标识(sessionid)的cookie
+4. 下次请求携带sessionid，服务器根据session找到对应的数据(session_data),进行解密，进行反序列化，根据key获取对应的值
+
 django中session的操作
 
 ```python
 # 设置
 request.session[key] = value
 # 获取
-request.session.get('is_login')
-request.session['key']
+request.session.get(key)
+request.session[key]
 # 删除
+request.sesion.pop(key)  del request.session[key]
+request.session.delete() # 删除所有的键值对， 不删除cookie
+request.session.flush() # 删除所有的键值对， 也删除cookie
+
+# 其他
+默认的超时时间（2周）
+request.session.set_expiry(value)  # 设置超时时间
+request.session.clear_expired() # 清除已经失效的session数据
+
+from django.conf import global_settings
 ```
 
+## 6 中间件
+
+django的中间件是全局范围内处理django的请求和响应的框架级别的钩子。
+
+```PYTHON
+from django.utils.deprecation import middlewareMixin
+
+class MD1(middlewareMixin):
+	def process_request(self, request):
+		pass
+		
+# settings中要中注册
+MIDDKEWARE = [
+	'app01.middlewares.my_middleware.MD1',
+]
+```
+
+
+
+5个方法 4个特点
+
+### 6.1 process_request(self, request)
+
+执行时间： 路由匹配之前，视图函数之前
+
+参数：request 请求的对象和视图函数是同一个对象
+
+执行顺序： 按照注册的顺序 顺序执行
+
+返回值：None 正常流程
+
+​				HttpResponse 不执行后续的中间件的Process_request、路由匹配、函数都不执行，直接执行当前中间件的process_response方法
+
+### 6.2 process_response(self, request, response)
+
+执行时间：视图函数之后
+
+参数：request 请求的对象和视图函数是同一个对象
+
+​			response 响应对象
+
+执行顺序：按照注册的顺序，倒序执行
+
+返回值：HttpRsponse 必须返回
+
+### 6.3 process_view(self, request, view_func, view_args, view_kwargs)
+
+执行时间：路由匹配之后，视图函数之前
+
+参数：request 请求的对象和视图函数是同一个对象
+
+​			view_func 视图函数
+
+​			view_args 视图函数的位置参数
+
+​			view_kwargs 视图函数的关键字参数
+
+执行顺序：按照注册的顺序，顺序执行
+
+返回值：HttpRsponse 之后的中间件的process_view 、视图都不执行，执行最后一个中间件的process_response方法
+
+![image-20200525192054788](C:\Users\km\AppData\Roaming\Typora\typora-user-images\image-20200525192054788.png)
+
+### 6.4 process_exception(self, request, exception)
+
+ 执行时间：（触发条件）视图中有异常才执行
+
+参数：request 请求的对象和视图函数是同一个对象
+
+​			exception 异常的对象
+
+执行顺序：按照注册的顺序，倒序执行
+
+返回值：
+
+​			None 当前的中间件没有处理异常，交给下一个中间件处理异常，如果都没有处理异常，django处理异常
+
+​			HttpRsponse 当前中间件处理了异常，后面的中间件process_exception方法不执行。执行最后一个中间件的process_response方法
+
+### 6.5 process_template_response(self, request, response)
+
+执行时间：（触发条件）视图中返回的对象是TemplateResponse对象
+
+参数：request 请求的对象和视图函数是同一个对象
+
+​			response 返回的templateResponse对象
+
+执行顺序：按照注册的顺序，倒序执行
+
+返回值：
+
+​			HttpRsponse  必须返回 返回的templateResponse对象
+
+​			过程处理模板的名字，参数
+
+​			response.template_name 模板的名字
+
+​			response.context_data 变量的名字
+
+
+
+中间件限制访问频率
+
+```python
+visit_history = {
+	# 'ip':[time,time]
+}
+
+import time
+class Throttle(MiddlewareMixin):
+    def process_request(self,request):
+        ip = request.META.get('REMOTE_ADDR')
+        history = visit_history.get(ip, [])
+        now = time.time
+        new_histoty = []
+        for i in history:
+            if now - i < 5:
+                new_history.append(i)
+             
+        visit_history[ip] = new_history
+        if new_history >=3:
+            return HttpResponse('访问太快了')
+        new_history.append(now)
+```
+
+
+
+JSON
+
+轻量级的文本数据交换格式
+
+python
+
+支持的数据类型：
+
+​	字符串 数字 列表 字典 None 布尔值
+
+序列化
+
+​	python --> json 字符串
+
+反序列化
+
+​	json字符串 --> python
+
+
+
+js
+
+ajax 是一个js的技术，异步发送请求的
+
+ajax特点：
+
+1. 异步
+2. 局部刷新
+3. 传输的数据量小
+
+```js
+$.ajax({
+    url:'/calc/',
+    type:'get',
+    data:{
+        'x1':$('[name="i1"]').val(),
+        'x2':$('[name="i2"]').val(),
+    },
+    success:function(data){
+        $('[name="i3"]').val(data)
+    }
+})
+```
+
+ajax传收数据：
+
+```js
+$.ajax({
+	url: '/test/',
+	type:'get',
+	data:{
+		name:'alex',
+		age:34,
+		hobby: json.stringify(['抽烟','喝酒','撩妹'])
+	},
+	success:function(data){
+		console.log(data)
+		console.log(data.status)
+	}
+})
+```
+
+使用ajax上传文件
+
+```js
+$('#b1').click(function(){
+	var formData = new FormData();	//multipart/form-data
+	formData.append('name', 'alex');
+	formData.append('f1', $('#f1')[0].files[0]);
+	$.ajax({
+		url:'/upload/',
+		type:'post',
+		data: formData,
+		processData:false, // ajax不处理数据的编码
+		contentType:false, // 不修改content-type的请求头
+		success：function(data){
+			alert(data)
+		}
+	})
+})
+```
+
+```python
+from django.views.decorators.csrf import csrf_exempt, csrf_protect
+csrf_exempt 加在视图上， 该视图不需要进行csrf校验
+csrf_protect 加在视图上， 该视图必须进行csrf校验
+ensure_csrf_cookie 加在视图上，确保返回时设置csrftoken的cookie
+```
+
+csrf的校验
+
+```python
+从cookie中获取csrftoken的值
+从request.POST 中获取csrgmiddlewaretoken的值或者从请求头中获取x-csrftoken的值
+把这个值做对比，如果相同，通过校验，反之拒绝
+```
+
+前提：必须有csrftoken的cookie
+
+1. 使用{% csrf_token %}
+2. from django.views.decorators.csrf import ensure_csrf_cookie
+
+让ajax可以通过csrf的校验：
+
+1. 给data添加csrfmiddlewaretoken的键值对
+2. 给headers添加x-csrftoken的键值对
