@@ -32,7 +32,7 @@
 - 安装项目所需的环境
 
   ```bash
-  pip freeze > requirementd.txt
+  pip freeze > requirements.txt
   pip install -r requirements.txt  # 安装全部的环境
   ```
 
