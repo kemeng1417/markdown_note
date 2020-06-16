@@ -368,9 +368,9 @@ input请求里隐藏携带name 和 密钥
 ### 1.7 withratio 
 
 ```django
-{% withratio 100 2 1%}
+{% withratio 100 2 1 %}
 
-{# a/b*c#}
+{# a/b*c #}
 ```
 
 ## 2 母版
@@ -433,8 +433,7 @@ get_static_prefix 可以获取static的路径 返回
 
 ```
 @register.simple_tag
-def
- plus(a, b, c):
+def plus(a, b, c):
  	return "{}+{}+{}".format(a, b, c)
 ```
 
@@ -553,7 +552,7 @@ class xx(View)
 ```python
 class xx(View):
 	 @method_decorator(要装饰的函数)
-	 def diapatch(self,request,*args,**kwargs):
+	 def dispatch(self,request,*args,**kwargs):
 	 	res = super().dispatch(request,*args,**kwargs)
 	 	return res
 ```
@@ -753,7 +752,7 @@ from django.db.models import F, Q
 
 res = models.Book.objects.filter(kucun__lt=50)
 
-res = models.Book.objects.filter(sale__lt=F('kucun')) where 'sale'>'kucun'
+res = models.Book.objects.filter(sale__lt=F('kucun')) # where 'sale'>'kucun'
 res = models.Book.objects.filter(id__lte=3).update(sale=F('sale')*2+3)
 ```
 

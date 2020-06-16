@@ -158,7 +158,7 @@ def reg(request,*args,**kwargs):
 
    request的querydict对象
 
-```
+```python
 from django.http.request import QueryDict
 
 request.GET._mutable = True
@@ -166,6 +166,6 @@ request.GET['page'] = 1
 
 request.GET.copy()  # 返回一个可编辑的深拷贝
 
-request.GET.urledncode()  # page=1&aa=111
+request.GET.urlencode()  # page=1&aa=111
 ```
 
