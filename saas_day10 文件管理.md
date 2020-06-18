@@ -273,7 +273,158 @@ def create_bucket(bucket, region="ap-chengdu"):
 ## 总结
 
 - python 直接上传
-
 - js+临时凭证（跨域问题）
 
-  
+
+
+#### 3.8  markdown上传文件（无改动）
+
+#### 3.9 js上传文件
+
+- 临时凭证：当前项目&区域（request.tracer.project...)
+- js上传文件：当前设置的桶、区域
+
+#### 3.10 this
+
+```js
+var name = 'jack';
+
+function fun(){
+    var name = 'jack222'
+	console.log(name) //jack222
+};
+
+func(); 
+```
+
+```js
+var name = 'jack';
+
+function fun(){
+    var name = 'jack222'
+	console.log(this.name) //jack
+};
+
+func(); //相当于window.func()
+```
+
+```js
+var name = 'jack';
+
+info = {
+	name:'cc',
+	func:function (){
+	console.log(this.name) //cc
+};
+}
+
+
+into.func();
+```
+
+**总结：每个函数都是一个作用域，在他的内部都会存在this，谁调用的函数，那么this就是谁** 
+
+```js
+var name = 'jack';
+
+info = {
+	name:'cc',
+	func:function (){
+	console.log(this.name)//info.name cc
+	function test(){
+	console.log(this.name);//window.name jacg
+	}
+	test()
+};
+}
+
+
+into.func();
+```
+
+```js
+var name = 'jack';
+
+info = {
+	name:'cc',
+	func:function (){
+	var that= this;
+	function test(){
+	console.log(that.name);// 	info.name --> cc
+	}
+	test()
+};
+}
+
+
+into.func();
+```
+
+
+
+#### 3.11 闭包
+
+```js
+data_list = [11,22,33]
+for(var i=0; i++; i<data.length){
+	console.log(i, data[i])
+}
+```
+
+```js
+data_list = [11,22,33]
+for(var i=0; i++; i<data.length){
+	// 循环会发送三次ajax请求，由于ajax是异步请求，所以在发送请求时候不会等待
+	$.ajax({
+		url:"..",
+		data:{value:data_list[i]},
+		success:function(res){
+			//1分钟之后执行回调函数
+			console.log(i);  //输出2
+		}
+		
+		
+	})
+}
+console.log(i) //输出：2
+```
+
+```
+data_list = [11,22,33]
+for(var i=0; i++; i<data.length){
+	// 循环会发送三次ajax请求，由于ajax是异步请求，所以在发送请求时候不会等待
+	function xx(data){
+	$.ajax({
+		url:"..",
+		data:{value:data_list[i]},
+		success:function(res){
+			//1分钟之后执行回调函数
+			console.log(data);  //输出0,1,2 创建三个封闭的区域 
+		}
+		
+		
+	})
+	}
+	xx(i)
+}
+console.log(i) //输出：2
+```
+
+```js
+data_list = [11,22,33]
+for(var i=0; i++; i<data.length){
+	// 循环会发送三次ajax请求，由于ajax是异步请求，所以在发送请求时候不会等待
+  // 使用自执行函数完成
+	(function(data){
+	$.ajax({
+		url:"..",
+		data:{value:data_list[i]},
+		success:function(res){
+			//1分钟之后执行回调函数
+			console.log(data);  //输出0,1,2 创建三个封闭的区域 
+	})(i)
+}
+console.log(i) //输出：2
+```
+
+注意事项：如果以后循环，循环内容发送异步请求，异步任务完成后，返回的已经是循环以后的值了
