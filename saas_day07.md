@@ -187,8 +187,8 @@ class ColorRadioSelect(RadioSelect):
 1.数据库中获取
 	我创建的
 	我参与的
-2.循环希纳是
-3.当前页面需要，其他页面也需要 用inclusion实现
+2.循环
+3.当前页面需要，其他页面也需要用inclusion实现
 ```
 
 ### 5 项目管理

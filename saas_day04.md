@@ -68,7 +68,7 @@ function bindClickSubmit() {
 #### 1.3 写入数据库
 
 ```
-pip3 install pillow
+    pip3 install pillow
 ```
 
 基本使用

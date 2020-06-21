@@ -22,7 +22,7 @@
 
 ### 1 功能设计
 
-![image-20200616223813089](D:\km_py\markdown_note\saas_day10 文件管理.assets\image-20200616223813089.png)
+![image-20200616223813089](D:\km_py\markdown_note\saas_day10 文件管理.assets\image-20200616223813089.png)	
 
 ### 2 数据库的设计
 

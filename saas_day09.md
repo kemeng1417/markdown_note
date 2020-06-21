@@ -60,7 +60,7 @@
   1.内容区域
   			<div id="previewMarkdown">
                    <textarea>{{ wiki_object.content }}</textarea>
-              </div>
+              </div>	
   2.引入css
   <link rel="stylesheet" href="{% static 'plugin/editor-md/css/editormd.preview.min.css' %}">
   3.引入js
