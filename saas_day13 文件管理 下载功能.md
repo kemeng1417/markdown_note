@@ -60,6 +60,34 @@ def download(request):
 
 #### 3.2 新建问题
 
+##### 3.2.1 模态对话框
+
+- 显示对话框
+
+- 显示用户要填写的表单
+
+- 前端插件
+
+  - editormd
+
+  - bootstrap-datepicker
+
+    - ```
+      css
+      js
+      找到标签变化
+      ```
+
+  - bootstrap-select
+
+    - ```
+      css
+      js
+      modelForm中添加属性修改
+      ```
+
+      
+
 #### 3.3 问题列表
 
 #### 3.4 自定义分页
