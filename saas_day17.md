@@ -29,6 +29,7 @@ USE_L10N = True
 # 影响自动生成数据库时间字段
 # USE_TZ=True 创建UTC时间写入数据库
 # USE_TZ=False 根据TIME_ZONE设置的时区写入数据库
+
 # USE_TZ = True
 USE_TZ = False
 
@@ -236,7 +237,7 @@ https://opendocs.alipay.com/apis/api_1/alipay.trade.page.pay
 ```
 
 ```
-如果支付成功之后父，服务器宕机，如果处理？
+如果支付成功之后，服务器宕机，如果处理？
 	偷偷向notify_url发送请求，
 	服务器宕机，支付宝访问不到，则会在24小时以内发送8次请求：4m,10m,10m,1h,2h,6h,15h
 	网站接收到支付宝请求之后，返回数据不正确，也会一直发送请求。

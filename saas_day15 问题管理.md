@@ -113,7 +113,7 @@ for循环会打印yield的值0
 
 ### 3 筛选
 
-- checjboc 筛选
+- checkbox 筛选
 - select 筛选
 
 
